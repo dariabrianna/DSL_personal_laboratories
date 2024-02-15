@@ -90,10 +90,8 @@ def grammar_to_automaton(grammar):
 
 grammar = Grammar()
 
-# Check if a string can be obtained via the state transition from the automaton
 fa = grammar_to_automaton(grammar)
 
-# Test the FA with a valid string and an invalid string
 test_strings = ['dabcbaabab', 'invalid']
 results = {ts: fa.check_string(ts) for ts in test_strings}
 print("Testing strings against the finite automaton:")
@@ -107,6 +105,3 @@ five_valid_strings = grammar.generate_five_valid_strings()
 print("Five valid strings generated from the grammar:")
 for string in five_valid_strings:
     print(string)
-
-# test_string = "some_string"
-# print(fa.check_string(test_string))
