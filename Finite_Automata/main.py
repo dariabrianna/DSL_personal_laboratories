@@ -41,7 +41,6 @@ class FiniteAutomaton:
 
         return dot
 
-
 # Define the FA
 states = {'q0', 'q1', 'q2', 'q3'}
 alphabet = {'a', 'b'}
@@ -54,6 +53,8 @@ transition_function = {
 }
 start_state = 'q0'
 accept_states = {'q2'}
+
+
 
 def is_deterministic(fa):
     for state in fa.states:
