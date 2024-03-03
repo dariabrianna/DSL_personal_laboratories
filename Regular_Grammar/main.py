@@ -29,6 +29,22 @@ class Grammar:
         valid_strings = self.generate_valid_strings()
         return valid_strings[:5]
 
+    def classify_grammar(self):
+        is_regular = True
+        is_context_free = True
+        for head, productions in self.P.items():
+            for production in productions:
+                if not (production.islower() or (len(production) == 2 and production[1].isupper())):
+                    is_regular = False
+                if len(head) > 1 or (len(production) > 1 and not production[1:].islower()):
+                    is_context_free = False
+        if is_regular:
+            return "Type 3 (Regular)"
+        if is_context_free:
+            return "Type 2 (Context Free)"
+        else:
+            return "Type 1 (Context-Sensitive)"
+
 
 class FiniteAutomaton:
     def __init__(self):
@@ -89,6 +105,8 @@ def grammar_to_automaton(grammar):
 
 
 grammar = Grammar()
+classification = grammar.classify_grammar()
+print("Grammar classification:", classification)
 
 fa = grammar_to_automaton(grammar)
 
