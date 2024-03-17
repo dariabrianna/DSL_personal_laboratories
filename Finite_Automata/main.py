@@ -24,14 +24,14 @@ class FiniteAutomaton:
         dot = Digraph()
         dot.attr(rankdir='LR', size='8,5')
 
-        # Non-accept states
+        # nu accepta state uri
         for state in self.states - self.accept_states:
             dot.node(state, shape='circle')
-        # Accept states
+        # accepta state uri
         for state in self.accept_states:
             dot.node(state, shape='doublecircle')
 
-        # Invisible start node
+    
         dot.node('', shape='none')
         dot.edge('', self.start_state)
 
@@ -62,10 +62,10 @@ def is_deterministic(fa):
         for char in fa.alphabet:
             if (state, char) in fa.transition_function:
                 if char in seen_transitions:
-                    return False  # More than one transition for a state and symbol
+                    return False  # mai mult de o tranzitie pentru state sau symbol
                 seen_transitions.add(char)
             else:
-                return False  # No transition for a state and symbol
+                return False  # fara tranzitii pentru state sau symbol
     return True
 
 

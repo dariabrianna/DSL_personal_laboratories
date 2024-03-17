@@ -1,8 +1,8 @@
 digraph {
 	rankdir=LR size="8,5"
-	q3 [shape=circle]
-	q0 [shape=circle]
 	q1 [shape=circle]
+	q0 [shape=circle]
+	q3 [shape=circle]
 	q2 [shape=doublecircle]
 	"" [shape=none]
 	"" -> q0
