@@ -1,4 +1,4 @@
-class Gramamr():
+class Grammar():
     def __init__(self):
         self.P = {
             'S' : ['bA', 'BC'],
@@ -176,5 +176,5 @@ class Gramamr():
         P5 = self.TransformToCNF()
         return P1, P2, P3, P4, P5
 if __name__ == "__main__":
-    g = Gramamr()
+    g = Grammar()
     P1, P2, P3, P4, P5 = g.ReturnProductions()
