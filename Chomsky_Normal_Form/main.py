@@ -1,90 +1,180 @@
-class Grammar:
+class Gramamr():
     def __init__(self):
-        self.productions = {
-            'S': ['bA', 'BC'],
-            'A': ['a', 'aS', 'bCaCa'],
-            'B': ['A', 'bS', 'bCAa'],
-            'C': ['eps', 'AB'],
-            'D': ['AB']
-        }
-        self.non_terminals = ['S', 'A', 'B', 'C', 'D']
-        self.terminals = ['a', 'b']
+        self.P = {
+            'S' : ['bA', 'BC'],
+            'A' : ['a', 'aS', 'bCaCa'],
+            'B' : ['A', 'bS', 'bCAa'],
+            'C' : ['eps', 'AB'],
+            'D' : ['AB']
+            }
+        self.V_N = ['S','A','B','C','D']
+        self.V_T = ['a', 'b']
+    
+    def RemoveEpsilon(self):
+        #1. remove epsilon productions
+        #find non-terminal symbols that derive into empty string
+        nt_epsilon = []
+        for key, value in self.P.items():
+            s = key
+            productions = value
+            for p in productions:
+                if p == 'eps':
+                    nt_epsilon.append(s)
+        
+        for key, value in self.P.items():
+            #traverse each non-terminal that has epsilon production
+            for ep in nt_epsilon:
+                #traverse each production 
+                for v in value:
+                #check non-erminal with eps prod is in current production
+                    prod_copy = v
+                    if ep in prod_copy:
+                        for c in prod_copy:
+                            #delete epsilon prod and add new prod
+                            if c == ep:
+                                value.append(prod_copy.replace(c, ''))
+        #initialize a copy with added prod
+        P1 = self.P.copy()
+        #remove eps prod from copy
+        for key, value in self.P.items():
+            for v in value:
+                if v == 'eps':
+                    P1[key].remove(v)
+        
+        P_final = {}
+        for key,value in P1.items():
+            if len(value) != 0:
+                P_final[key] = value
+            else:
+                self.V_N.remove(key)
+        
+        print(f"1. After removing epsilon productions:\n{P_final}")
+        self.P = P_final.copy()
+        return  P_final
+    
+    def EliminateUnitProd(self):
+        #2. Eliminate any renaiming (unit productions)
+        #new productions for next step
+        P2 = self.P.copy()
+        for key, value in self.P.items():
+            #replace unit productions
+            for v in value:
+                if len(v) == 1 and v in self.V_N:
+                    P2[key].remove(v)
+                    for p in self.P[v]:
+                        P2[key].append(p)
+        print(f"2. After removing unit productions:\n{P2}")
+        self.P = P2.copy()
+        return P2
 
-    def display_grammar(self):
-        for key, prods in self.productions.items():
-            productions_str = " | ".join(prods)
-            print(f"{key} -> {productions_str}")
+    def EliminateInaccesible(self):
+        #3. Eliminate inaccesible symbols
+        P3 = self.P.copy()
+        accesible_symbols = [i for i in self.V_N]
+        #find elements that are inaccesible
+        for key, value in self.P.items():
+            for v in value:
+                for s in v:
+                    if s in accesible_symbols:
+                        accesible_symbols.remove(s)
+        #remove inaccesible symbols
+        for el in accesible_symbols:
+            del P3[el]
+        print(f"3. After removing inaccesible symbols:\n{P3}")
+        print(self.V_N)
+        self.P = P3.copy()
+        return P3
 
-    def remove_epsilon_productions(self):
-        eps_producers = {nt for nt, prods in self.productions.items() if 'eps' in prods}
-        for nt in eps_producers:
-            self.productions[nt].remove('eps')
-            for key, prods in list(self.productions.items()):
-                new_prods = []
-                for prod in prods:
-                    positions = [i for i, char in enumerate(prod) if char == nt]
-                    for i in range(1 << len(positions)):
-                        new_prod = ''.join(prod[j] for j in range(len(prod)) if not (1 << j & i))
-                        if new_prod:
-                            new_prods.append(new_prod)
-                self.productions[key].extend(new_prods)
-                self.productions[key] = list(set(self.productions[key]))
+    def RemoveUnprod(self):
+        #4. Remove unproductive symbols
+        P4 = self.P.copy()
 
-    def eliminate_unit_productions(self):
-        unit_prods = {nt: prods for nt, prods in self.productions.items() if all(len(prod) == 1 and prod.isupper() for prod in prods)}
-        for nt, prods in unit_prods.items():
-            self.productions[nt] = []
-            for prod in prods:
-                self.productions[nt].extend(self.productions[prod])
+        #Check the keys
+        for key,value in self.P.items():
+            count = 0
+            #identify unproductive symbols
+            for v in value:
+                for a in v:
+                    # print(key,'   ', a)
+                    # print(self.V_N)
+                    if a.isupper() and a in self.V_N:
+                        count+=1
+                if len(v) == 1 and v in self.V_T:
+                    count+=1
+            
+            #remove unproductive symbols
+            if count==0:
+                del P4[key]
+                # for k, v in self.P.items():
+                #     for e in v:
+                #         if k == key:
+                #             break
+                #         else:
+                #             if key in e:
+                #                 P4[key].remove(e)
 
-    def remove_inaccessible_symbols(self):
-        accessible = set('S')
-        stack = ['S']
-        while stack:
-            nt = stack.pop()
-            for prod in self.productions.get(nt, []):
-                for char in prod:
-                    if char in self.non_terminals and char not in accessible:
-                        accessible.add(char)
-                        stack.append(char)
-        self.productions = {nt: prods for nt, prods in self.productions.items() if nt in accessible}
+        #Check the values
+        for key, value in self.P.items():
+            for v in value:
+                for c in v:
+                    if c.isupper() and c not in P4.keys():
+                        P4[key].remove(v)
+                        break
+        
+        print(f"4. After removing unproductive symbols:\n{P4}")
+        self.P = P4.copy()
+        return P4
 
-    def remove_unproductive_symbols(self):
-        productive = set()
-        change = True
-        while change:
-            change = False
-            for nt, prods in self.productions.items():
-                for prod in prods:
-                    if all(char in self.terminals or char in productive for char in prod):
-                        if nt not in productive:
-                            productive.add(nt)
-                            change = True
-        self.productions = {nt: [prod for prod in prods if all(char in self.terminals or char in productive for char in prod)] for nt, prods in self.productions.items() if nt in productive}
+    def TransformToCNF(self):
+        #5. Obtain CNF
+        P5 = self.P.copy()
+        temp = {}
 
-    def transform_to_CNF(self):
-        # Placeholder for the actual CNF conversion logic
-        pass
+        #define a list of free symbols
+        vocabulary = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V', 'W','X','Y','Z']
+        free_symbols = [v for v in vocabulary if v not in self.P.keys()]
+        for key, value in self.P.items():
+            for v in value:
 
-    def execute_transformations(self):
-        print("Initial Grammar:")
-        self.display_grammar()
-        self.remove_epsilon_productions()
-        print("After Removing Epsilon Productions:")
-        self.display_grammar()
-        self.eliminate_unit_productions()
-        print("After Eliminating Unit Productions:")
-        self.display_grammar()
-        self.remove_inaccessible_symbols()
-        print("After Removing Inaccessible Symbols:")
-        self.display_grammar()
-        self.remove_unproductive_symbols()
-        print("After Removing Unproductive Symbols:")
-        self.display_grammar()
-        self.transform_to_CNF()
-        print("Final CNF:")
-        self.display_grammar()
+                #check if oriduction satisfies CNF
+                if (len(v) == 1 and v in self.V_T) or (len(v) == 2 and v.isupper()):
+                    continue
+                else:
 
+                    #split production into two parts
+                    left = v[:len(v)//2]
+                    right = v[len(v)//2:]
+
+                    #get the new symbols for each half
+                    if left in temp.values():
+                        temp_key1 = ''.join([i for i in temp.keys() if temp[i] == left])
+                    else:
+                        temp_key1 = free_symbols.pop(0)
+                        temp[temp_key1] = left
+                    if right in temp.values():
+                        temp_key2 =''.join( [i for i in temp.keys() if temp[i] == right])
+                    else:
+                        temp_key2 = free_symbols.pop(0)
+                        temp[temp_key2] = right
+                    
+                    #replace the production with the new symbols
+                    P5[key] = [temp_key1 + temp_key2 if item == v else item for item in P5[key]]
+
+        #add new productions
+        for key, value in temp.items():
+            P5[key] = [value]
+
+        print(f"5. Final CNF:\n{P5}")
+        return P5
+    
+    def ReturnProductions(self):
+        print(f"Initial Grammar:\n{self.P}")
+        P1 = self.RemoveEpsilon()
+        P2 = self.EliminateUnitProd()
+        P3 = self.EliminateInaccesible()
+        P4 = self.RemoveUnprod()
+        P5 = self.TransformToCNF()
+        return P1, P2, P3, P4, P5
 if __name__ == "__main__":
-    grammar = Grammar()
-    grammar.execute_transformations()
+    g = Gramamr()
+    P1, P2, P3, P4, P5 = g.ReturnProductions()
