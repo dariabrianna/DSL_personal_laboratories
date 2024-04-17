@@ -66,20 +66,20 @@ class Token:
 
 class Lexer:
     def __init__(self, text):
-        self.text = text.strip()  # Ensure there are no leading or trailing spaces
+        self.text = text.strip()  
         self.pos = 0
         self.current_char = self.text[self.pos] if self.text else None  # Current character in examination
 
     def advance(self):
-        """Move the 'pos' pointer to the next character."""
+        """verificam urmatorul caracter in input"""
         self.pos += 1
         if self.pos >= len(self.text):
-            self.current_char = None  # Indicates end of input
+            self.current_char = None  # indica finalul inputului
         else:
             self.current_char = self.text[self.pos]
 
     def skip_whitespace_and_newlines(self):
-        """Skip over spaces and newline characters in the input."""
+        """face skip la spatii si new line caractere"""
         while self.current_char is not None and self.current_char in [' ', '\n']:
             self.advance()
 
@@ -88,7 +88,6 @@ class Lexer:
 
     def get_next_token(self):
         while self.current_char is not None:
-            # Skip over any whitespace or newline characters
             if self.current_char in [' ', '\n']:
                 self.skip_whitespace_and_newlines()
                 continue
@@ -98,7 +97,7 @@ class Lexer:
                 match = regex.match(self.text, self.pos)
                 if match:
                     value = match.group(0)
-                    # Advance the 'pos' pointer past the matched token
+                    # avanseaza daca face match la token 
                     for _ in range(len(value)):
                         self.advance()
                     if value in KEY_WORDS:
@@ -106,17 +105,14 @@ class Lexer:
                     else:
                         return Token(token_type, value)
 
-            self.error()  # If no match was found, raise an error
+            self.error()  # daca nu gasim niciun match ridicam eroare
 
         return Token(EOF, None)  # Return an EOF token at the end of the input
 
-# Definitions for TOKEN_REGEX, KEY_WORDS, Token, etc., should remain as previously defined.
 
 
 if __name__ == '__main__':
-    #lexer = Lexer("i = 5\n for i in range(10): print(i)\n i +=1\n if i == 10: print(Hello)\n else: print(World)")
-    #lexer = Lexer("i = 0\n while i < 10: print(i)\n i += 1\n if i == 10: print(Hello)\n else: print(World)\n")
-    lexer = Lexer("age = 18\n if age >= 18: print('You are an adult')\n else: print('You are a child')\n")
+    lexer = Lexer("weight <= 34\n if weight >= 35: print('You are a child')\n else: print('You are a big child')\n")
     while True:
         token = lexer.get_next_token()
         if token.type == EOF:
